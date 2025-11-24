@@ -18,9 +18,7 @@ class ArbitroMenuController extends Controller
 
     /**
      * Resolver id_arbitro a partir de la sesión.
-     * En tu sesión guardas:
-     *   - user_id  = id_persona
-     *   - user_rol = 'Arbitro'
+     * - En tu sesión guardas: user_id = id_persona, user_rol = 'Arbitro'
      */
     private function resolveArbitroId(Request $r): ?int
     {
@@ -37,16 +35,16 @@ class ArbitroMenuController extends Controller
             }
         }
 
-        // Fallback para pruebas: ?arbitro_id=1
+        // fallback para pruebas: ?arbitro_id=1
         return (int) $r->query('arbitro_id', 1);
     }
 
     /**
      * GET /arbitro/stats
-     * Devuelve { ok, asignados, arbitrados }
+     * devuelve { ok, asignados, arbitrados }
      *
-     * - asignados: partidos activos donde es árbitro
-     * - arbitrados: partidos que YA tienen registro en asigna_partido
+     * - asignados: partidos activos asignados al árbitro (sin importar fecha)
+     * - arbitrados: partidos que ya tienen registro en asigna_partido
      */
     public function stats(Request $r)
     {
@@ -76,7 +74,11 @@ class ArbitroMenuController extends Controller
 
     /**
      * GET /arbitro/partidos/proximos
-     * Próximos partidos (fecha >= hoy) para ese árbitro.
+     * SOLO partidos:
+     *  - asignados al árbitro
+     *  - fecha >= hoy (por jugarse)
+     *  - estado_partido = 'Activo'
+     *  - SIN resultado en asigna_partido
      */
     public function proximos(Request $r)
     {
@@ -92,6 +94,7 @@ class ArbitroMenuController extends Controller
             ->leftJoin('equipos as ev', 'ev.id_equipo', '=', 'p.equipo_visitante')
             ->leftJoin('torneos as t', 't.id_torneo', '=', 'p.id_torneo')
             ->leftJoin('canchas as c', 'c.id_cancha', '=', 'p.id_cancha')
+            ->leftJoin('asigna_partido as ap', 'ap.id_partido', '=', 'p.id_partido') // para filtrar sin resultado
             ->select(
                 'p.id_partido as id',
                 'p.fecha',
@@ -104,6 +107,7 @@ class ArbitroMenuController extends Controller
             ->where('p.id_arbitro', $idArb)
             ->whereDate('p.fecha', '>=', $hoy)
             ->where('p.estado_partido', 'Activo')
+            ->whereNull('ap.id_asigna') // SIN resultado todavía
             ->orderBy('p.fecha')
             ->orderBy('p.hora')
             ->get();
@@ -113,7 +117,7 @@ class ArbitroMenuController extends Controller
 
     /**
      * GET /arbitro/partidos/historico
-     * Historial de partidos que YA tienen resultado (asigna_partido).
+     * Historial (partidos que ya tienen registro en asigna_partido).
      */
     public function historico(Request $r)
     {
@@ -148,10 +152,11 @@ class ArbitroMenuController extends Controller
 
     /**
      * GET /arbitro/partidos/jugados-sin-resultado
-     * Usado por registro_resultados.blade.php:
+     * Para la página regitro_resultados:
      * - partidos del árbitro
      * - fecha <= hoy (ya jugados)
-     * - que NO tengan registro en asigna_partido (sin resultado)
+     * - estado_partido = Activo
+     * - que NO tengan registro en asigna_partido
      */
     public function partidosJugadosSinResultado(Request $r)
     {
@@ -177,8 +182,8 @@ class ArbitroMenuController extends Controller
             )
             ->where('p.id_arbitro', $idArb)
             ->whereDate('p.fecha', '<=', $hoy)
-            // OJO: aquí NO filtro por estado_partido para no excluir nada por error
-            ->whereNull('ap.id_asigna') // sin resultado aún
+            ->where('p.estado_partido', 'Activo')
+            ->whereNull('ap.id_asigna') // sin resultado
             ->orderBy('p.fecha')
             ->orderBy('p.hora')
             ->get();
@@ -188,8 +193,8 @@ class ArbitroMenuController extends Controller
 
     /**
      * POST /arbitro/partidos/{id}/resultado
-     * Inserta en asigna_partido.
-     * Tus triggers se encargan de puntos y clasificación.
+     * Guarda resultado insertando en asigna_partido.
+     * Los triggers se encargan de puntos y clasificación.
      */
     public function guardarResultado(Request $r, int $id)
     {
@@ -218,7 +223,6 @@ class ArbitroMenuController extends Controller
             return response()->json(['ok' => false, 'message' => 'El partido ya tiene resultado registrado'], 422);
         }
 
-        // Insertar; el trigger trg_asigna_puntos calculará puntos_local/puntos_visitante
         DB::table('asigna_partido')->insert([
             'id_partido'       => $id,
             'goles_local'      => (int) $r->goles_local,
@@ -226,8 +230,6 @@ class ArbitroMenuController extends Controller
             'puntos_local'     => 0,
             'puntos_visitante' => 0,
         ]);
-
-        // Si más adelante guardas tarjetas/incidentes, puedes hacerlo en otra tabla.
 
         return response()->json(['ok' => true]);
     }
