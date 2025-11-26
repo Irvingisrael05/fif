@@ -168,18 +168,31 @@
 <div class="dashboard-container">
     {{-- User Info --}}
     <div class="user-info">
-        <div class="d-flex align-items-center">
-            <div class="me-3">
-                <i class="fas fa-futbol text-warning"></i>
-                <strong>Jugador</strong>
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <div>
+                    <i class="fas fa-futbol text-warning"></i>
+                    <strong>{{ $jugadorNombre ?? 'Jugador' }}</strong>
+                </div>
+
+                @if($equipoNombre)
+                    <div class="mt-1 small">
+                        <i class="fas fa-users text-success"></i>
+                        {{ $equipoNombre }}
+                    </div>
+                @endif
+
+                @if(!is_null($dorsal))
+                    <div class="mt-1 small">
+                        <i class="fas fa-tshirt text-warning"></i>
+                        Dorsal: #{{ $dorsal }}
+                    </div>
+                @endif
             </div>
+
             <a href="/" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Salir
             </a>
-        </div>
-        {{-- si quieres poner el dorsal desde BD, pásalo desde el controlador --}}
-        <div class="mt-2 small">
-            <i class="fas fa-tshirt text-warning"></i> Dorsal: #9
         </div>
     </div>
 
@@ -232,6 +245,7 @@
         </div>
     </div>
 
+    {{-- (A partir de aquí TODO IGUAL que ya tenías) --}}
     <div class="row">
         {{-- Próximos partidos --}}
         <div class="col-lg-6 mb-4">
@@ -319,7 +333,6 @@
                     <i class="fas fa-table"></i> Tabla de Posiciones
                 </h3>
 
-                {{-- Reutilizamos la página pública de posiciones en un iframe --}}
                 <div class="ratio ratio-4x3">
                     <iframe
                         src="{{ url('/tabla_pocisiones') }}"

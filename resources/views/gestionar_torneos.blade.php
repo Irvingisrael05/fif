@@ -231,7 +231,16 @@
                                         <span class="badge bg-{{ $badge }}">{{ $t->estado }}</span>
                                     </td>
                                     <td class="action-buttons">
-                                        <button class="btn btn-info btn-sm" onclick="verDetalles({{ $t->id_torneo }}, '{{ e($t->nombre) }}')">
+                                        {{-- CAMBIO: enviamos this y data-* con info amigable --}}
+                                        <button
+                                            class="btn btn-info btn-sm"
+                                            onclick="verDetalles(this)"
+                                            data-nombre="{{ e($t->nombre) }}"
+                                            data-temporada="{{ e($t->temporada) }}"
+                                            data-fechas="{{ \Carbon\Carbon::parse($t->fecha_inicio)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($t->fecha_fin)->format('d/m/Y') }}"
+                                            data-localidad="{{ e(optional($t->localidadRel)->comunidad ?? '—') }}"
+                                            data-estado="{{ e($t->estado) }}"
+                                        >
                                             <i class="fas fa-eye"></i> Detalles
                                         </button>
                                     </td>
@@ -273,17 +282,30 @@
         }
     });
 
-    // Detalles visibles con buen contraste
-    function verDetalles(id, nombre){
-        const panel=document.getElementById('detallesTorneo');
-        document.getElementById('tituloDetalle').textContent = `Detalles del Torneo: ${nombre}`;
+    // ===== Detalles SIN mostrar ID ni cosas técnicas =====
+    function verDetalles(btn){
+        const nombre    = btn.dataset.nombre || '';
+        const temporada = btn.dataset.temporada || '';
+        const fechas    = btn.dataset.fechas || '';
+        const localidad = btn.dataset.localidad || '—';
+        const estado    = btn.dataset.estado || '';
+
+        const panel = document.getElementById('detallesTorneo');
+        document.getElementById('tituloDetalle').textContent =
+            `Detalles del Torneo: ${nombre}`;
+
         document.getElementById('detallesContenido').innerHTML = `
-            <p class="mb-1">ID Torneo: <strong>${id}</strong></p>
-            <p class="mb-0">Aquí puedes renderizar detalles completos del torneo (cargar por AJAX o incluir datos en la fila).</p>
+            <p class="mb-1"><strong>Nombre del torneo:</strong> ${nombre}</p>
+            <p class="mb-1"><strong>Temporada:</strong> ${temporada}</p>
+            <p class="mb-1"><strong>Fechas:</strong> ${fechas}</p>
+            <p class="mb-1"><strong>Localidad:</strong> ${localidad}</p>
+            <p class="mb-0"><strong>Estado:</strong> ${estado}</p>
         `;
+
         panel.style.display='block';
         panel.scrollIntoView({behavior:'smooth'});
     }
+
     function cerrarDetalles(){
         const panel=document.getElementById('detallesTorneo');
         document.getElementById('detallesContenido').textContent =

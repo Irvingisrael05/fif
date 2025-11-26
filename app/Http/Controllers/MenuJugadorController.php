@@ -9,34 +9,54 @@ use Carbon\Carbon;
 class MenuJugadorController extends Controller
 {
     /**
-     * Resuelve el id_equipo del jugador autenticado.
+     * Resuelve info del jugador autenticado:
+     * - id_equipo
+     * - dorsal
+     * - nombre completo (desde personas)
+     *
      * En sesión guardas: user_id = id_persona, user_rol = 'Jugador'
      */
-    private function resolveEquipoId(Request $r): ?int
+    private function resolveJugadorInfo(Request $r): array
     {
         $idPersona = $r->session()->get('user_id');
+
         if (!$idPersona) {
-            return null;
+            return [null, null, null];
         }
 
-        // AJUSTA el nombre de la tabla/columnas si en tu BD son diferentes
-        $row = DB::table('jugadores')
-            ->where('persona', $idPersona)
+        $row = DB::table('jugadores as j')
+            ->leftJoin('personas as p', 'p.id_persona', '=', 'j.persona')
+            ->select(
+                'j.equipo',          // tu columna en jugadores
+                'j.dorsal',          // dorsal del jugador
+                DB::raw(
+                    "TRIM(CONCAT(
+                        COALESCE(p.nombre,''),' ',
+                        COALESCE(p.apaterno,''),' ',
+                        COALESCE(p.amaterno,'')
+                    )) as nombre"
+                )
+            )
+            ->where('j.persona', $idPersona)
             ->first();
 
         if (!$row) {
-            return null;
+            return [null, null, null];
         }
 
-        // intento dos nombres posibles de columna
-        $idEquipo = $row->equipo ?? ($row->id_equipo ?? null);
+        $idEquipo = $row->equipo ?? null;
+        $dorsal   = $row->dorsal ?? null;
+        $nombre   = $row->nombre ?: null;
 
-        return $idEquipo ? (int) $idEquipo : null;
+        return [$idEquipo ? (int)$idEquipo : null, $dorsal, $nombre];
     }
 
     public function index(Request $r)
     {
-        $idEquipo = $this->resolveEquipoId($r);
+        // ==========================
+        // INFO DEL JUGADOR
+        // ==========================
+        [$idEquipo, $dorsal, $jugadorNombre] = $this->resolveJugadorInfo($r);
 
         // Valores por defecto si algo falla
         $equipoNombre = null;
@@ -57,11 +77,7 @@ class MenuJugadorController extends Controller
 
             $hoy = Carbon::today()->toDateString();
 
-            /*
-             * PRÓXIMOS PARTIDOS DEL EQUIPO
-             * - estado_partido = 'Activo'
-             * - fecha >= hoy
-             */
+            // PRÓXIMOS PARTIDOS DEL EQUIPO
             $proximos = DB::table('partido as p')
                 ->leftJoin('equipos as el', 'el.id_equipo', '=', 'p.equipo_local')
                 ->leftJoin('equipos as ev', 'ev.id_equipo', '=', 'p.equipo_visitante')
@@ -89,9 +105,7 @@ class MenuJugadorController extends Controller
                 ->orderBy('p.hora')
                 ->get();
 
-            /*
-             * PARTIDOS RECIENTES (ya tienen resultado)
-             */
+            // PARTIDOS RECIENTES (ya tienen resultado)
             $recientes = DB::table('partido as p')
                 ->join('asigna_partido as ap', 'ap.id_partido', '=', 'p.id_partido')
                 ->leftJoin('equipos as el', 'el.id_equipo', '=', 'p.equipo_local')
@@ -115,9 +129,7 @@ class MenuJugadorController extends Controller
                 ->limit(20)
                 ->get();
 
-            /*
-             * STATS DEL EQUIPO: jugados, goles a favor / en contra
-             */
+            // STATS DEL EQUIPO
             $jugados = $recientes->count();
 
             $goles = DB::table('partido as p')
@@ -146,10 +158,7 @@ class MenuJugadorController extends Controller
             $gc = (int) ($goles->gc ?? 0);
             $dg = $gf - $gc;
 
-            /*
-             * POSICIÓN EN LA TABLA
-             * Usamos tabla "clasificacion" (ajusta el nombre si tu vista se llama distinto)
-             */
+            // POSICIÓN EN LA TABLA (si existe tabla clasificacion)
             $posicion = null;
             if (DB::getSchemaBuilder()->hasTable('clasificacion')) {
                 $clas = DB::table('clasificacion')
@@ -177,11 +186,13 @@ class MenuJugadorController extends Controller
         }
 
         return view('menu_jugador', [
-            'equipoNombre' => $equipoNombre,
-            'stats'        => $stats,
-            'proximos'     => $proximos,
-            'recientes'    => $recientes,
-            'equipoId'     => $idEquipo,
+            'equipoNombre'  => $equipoNombre,
+            'stats'         => $stats,
+            'proximos'      => $proximos,
+            'recientes'     => $recientes,
+            'equipoId'      => $idEquipo,
+            'dorsal'        => $dorsal,
+            'jugadorNombre' => $jugadorNombre,
         ]);
     }
 }

@@ -8,33 +8,78 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root{--verde-principal:#2ecc71;--verde-oscuro:#145a32;--dorado:#f1c40f;--gris-oscuro:#1e272e;--blanco:#ffffff;}
-        body{background:linear-gradient(rgba(20,90,50,.85),rgba(20,90,50,.85)),url('https://images.unsplash.com/photo-1461896836934-ffe607ba8211?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat fixed;color:var(--blanco);font-family:'Poppins',sans-serif;min-height:100vh;padding:20px;}
+        body{
+            background:linear-gradient(rgba(20,90,50,.85),rgba(20,90,50,.85)),
+            url('https://images.unsplash.com/photo-1461896836934-ffe607ba8211?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')
+            center/cover no-repeat fixed;
+            color:var(--blanco);font-family:'Poppins',sans-serif;min-height:100vh;padding:20px;
+        }
         .dashboard-container{max-width:1400px;margin:0 auto;}
-        .header{text-align:center;margin-bottom:40px;padding:25px;background:rgba(30,39,46,.95);border-radius:20px;border:3px solid var(--dorado);box-shadow:0 10px 30px rgba(0,0,0,.3);position:relative;}
+        .header{
+            text-align:center;margin-bottom:40px;padding:25px;background:rgba(30,39,46,.95);
+            border-radius:20px;border:3px solid var(--dorado);box-shadow:0 10px 30px rgba(0,0,0,.3);position:relative;
+        }
         .header h1{color:var(--dorado);font-weight:800;text-transform:uppercase;margin-bottom:10px;font-size:2.5rem;}
         .header p{color:var(--verde-principal);font-size:1.2rem;font-weight:600;}
-        .user-panel{position:absolute;top:20px;right:20px;background:rgba(46,204,113,.1);padding:15px;border-radius:15px;border:1px solid var(--dorado);width:280px;}
-        .user-panel-header{display:flex;align-items:center;gap:10px;margin-bottom:15px;}
+
+        .user-panel{
+            position:absolute;top:20px;right:20px;background:rgba(46,204,113,.1);
+            padding:15px;border-radius:15px;border:1px solid var(--dorado);width:280px;
+        }
+        .user-panel-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
         .user-panel-header i{font-size:1.8rem;color:var(--dorado);}
         .user-panel-header h5{color:var(--dorado);margin:0;font-size:1.1rem;}
-        .torneo-select{background:rgba(255,255,255,.1);border:1px solid var(--dorado);border-radius:10px;color:var(--blanco);padding:10px 15px;width:100%;margin-bottom:15px;}
-        .torneo-select option{background:var(--gris-oscuro);color:var(--blanco);}
-        .logout-btn{background:transparent;border:2px solid #e74c3c;color:#e74c3c;padding:8px 15px;border-radius:25px;text-decoration:none;transition:.3s;font-weight:600;display:inline-flex;align-items:center;gap:8px;width:100%;justify-content:center;font-size:.9rem;}
+        .user-panel-name{font-size:.9rem;}
+        .user-panel-mail{font-size:.8rem;color:#bdc3c7;}
+
+        .logout-btn{
+            background:transparent;border:2px solid #e74c3c;color:#e74c3c;padding:8px 15px;border-radius:25px;
+            text-decoration:none;transition:.3s;font-weight:600;display:inline-flex;align-items:center;
+            gap:8px;width:100%;justify-content:center;font-size:.9rem;
+        }
         .logout-btn:hover{background:#e74c3c;color:#fff;transform:translateY(-2px);}
+
         .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:25px;margin-top:30px;}
-        .card{background:linear-gradient(145deg,rgba(30,39,46,.95) 0%,rgba(20,90,50,.7) 100%);border:2px solid var(--dorado);border-radius:15px;padding:30px;text-align:center;transition:.3s;color:var(--blanco);min-height:220px;display:flex;flex-direction:column;justify-content:center;align-items:center;box-shadow:0 8px 25px rgba(0,0,0,.2);}
+        .card{
+            background:linear-gradient(145deg,rgba(30,39,46,.95) 0%,rgba(20,90,50,.7) 100%);
+            border:2px solid var(--dorado);border-radius:15px;padding:30px;text-align:center;transition:.3s;
+            color:var(--blanco);min-height:220px;display:flex;flex-direction:column;justify-content:center;align-items:center;
+            box-shadow:0 8px 25px rgba(0,0,0,.2);
+        }
         .card:hover{transform:translateY(-8px);box-shadow:0 15px 35px rgba(241,196,15,.3);border-color:var(--verde-principal);}
-        .card i{font-size:3.5rem;background:linear-gradient(135deg,var(--dorado),var(--verde-principal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;}
+        .card i{
+            font-size:3.5rem;background:linear-gradient(135deg,var(--dorado),var(--verde-principal));
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;
+        }
         .card h3{color:var(--dorado);font-weight:700;margin-bottom:15px;font-size:1.4rem;}
         .card p{color:var(--blanco);opacity:.9;line-height:1.5;margin-bottom:20px;font-size:.95rem;}
-        .btn-dashboard{background:linear-gradient(45deg,var(--dorado),var(--verde-principal));border:none;border-radius:25px;padding:12px 30px;color:var(--gris-oscuro);font-weight:700;text-decoration:none;transition:.3s;font-size:1rem;display:inline-flex;align-items:center;gap:8px;}
-        .btn-dashboard:hover{background:linear-gradient(45deg,var(--verde-principal),var(--dorado));transform:translateY(-2px);box-shadow:0 5px 15px rgba(46,204,113,.4);color:var(--gris-oscuro);text-decoration:none;}
+        .btn-dashboard{
+            background:linear-gradient(45deg,var(--dorado),var(--verde-principal));border:none;border-radius:25px;
+            padding:12px 30px;color:var(--gris-oscuro);font-weight:700;text-decoration:none;transition:.3s;font-size:1rem;
+            display:inline-flex;align-items:center;gap:8px;
+        }
+        .btn-dashboard:hover{
+            background:linear-gradient(45deg,var(--verde-principal),var(--dorado));transform:translateY(-2px);
+            box-shadow:0 5px 15px rgba(46,204,113,.4);color:var(--gris-oscuro);text-decoration:none;
+        }
+
         .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:30px;}
-        .stat-card{background:rgba(46,204,113,.1);border-radius:15px;padding:20px;text-align:center;border:1px solid rgba(46,204,113,.3);}
+        .stat-card{
+            background:rgba(46,204,113,.1);border-radius:15px;padding:20px;text-align:center;
+            border:1px solid rgba(46,204,113,.3);
+        }
         .stat-number{font-size:2.5rem;font-weight:bold;color:var(--dorado);margin-bottom:5px;}
         .stat-label{color:var(--verde-principal);font-weight:600;font-size:.9rem;}
-        .section-title{color:var(--dorado);border-bottom:2px solid var(--verde-principal);padding-bottom:10px;margin:40px 0 20px 0;font-weight:700;}
-        .modal-content{background:linear-gradient(145deg,rgba(30,39,46,.98) 0%,rgba(20,90,50,.9) 100%);border:2px solid var(--dorado);border-radius:15px;color:var(--blanco);}
+
+        .section-title{
+            color:var(--dorado);border-bottom:2px solid var(--verde-principal);
+            padding-bottom:10px;margin:40px 0 20px 0;font-weight:700;
+        }
+
+        .modal-content{
+            background:linear-gradient(145deg,rgba(30,39,46,.98) 0%,rgba(20,90,50,.9) 100%);
+            border:2px solid var(--dorado);border-radius:15px;color:var(--blanco);
+        }
         .modal-header{border-bottom:1px solid var(--dorado);}
         .modal-title{color:var(--dorado);font-weight:700;}
         .btn-close{filter:invert(1);}
@@ -42,7 +87,11 @@
         .table-dark th{background:var(--verde-oscuro);color:var(--dorado);border-color:var(--dorado);}
         .table-dark td{border-color:rgba(46,204,113,.3);}
         .badge-light{background:#f8f9fa;color:#212529;}
-        @media (max-width:768px){.user-panel{position:static;width:100%;margin-bottom:20px}.header{padding-bottom:180px}}
+
+        @media (max-width:768px){
+            .user-panel{position:static;width:100%;margin-bottom:20px}
+            .header{padding-bottom:180px}
+        }
     </style>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
@@ -51,64 +100,101 @@
     <div class="header">
         <h1><i class="fas fa-user-tie"></i> Menu Coordinador</h1>
         <p>Control total del sistema FIF - Gestión de torneos y asignaciones</p>
+
+        {{-- PANEL DEL USUARIO (SIN SELECTOR DE TORNEO) --}}
         <div class="user-panel">
             <div class="user-panel-header">
                 <i class="fas fa-user-shield"></i>
-                <h5>Coordinador General</h5>
+                <div>
+                    <h5>Coordinador General</h5>
+                    @if($coordNombre)
+                        <div class="user-panel-name">{{ $coordNombre }}</div>
+                    @endif
+                    @if($coordCorreo)
+                        <div class="user-panel-mail">{{ $coordCorreo }}</div>
+                    @endif
+                </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label text-warning small">Seleccionar Torneo</label>
-                <select class="torneo-select" id="selectorTorneo">
-                    <option value="1" selected>Torneo Verano Valle 2025</option>
-                    <option value="2">Copa Invierno 2024</option>
-                    <option value="3">Liga Premier 2025</option>
-                </select>
-            </div>
-            <a href="/" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            <a href="/" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
         </div>
     </div>
 
+    {{-- ESTADÍSTICAS (DATOS REALES DEL CONTROLADOR) --}}
     <div class="stats-grid">
-        <div class="stat-card"><div class="stat-number" id="statEquipos">--</div><div class="stat-label">Equipos Registrados</div></div>
-        <div class="stat-card"><div class="stat-number" id="statArbitros">--</div><div class="stat-label">Árbitros Activos</div></div>
-        <div class="stat-card"><div class="stat-number" id="statTorneos">--</div><div class="stat-label">Torneos Activos</div></div>
-        <div class="stat-card"><div class="stat-number" id="statPartidos">--</div><div class="stat-label">Partidos Programados</div></div>
+        <div class="stat-card">
+            <div class="stat-number">{{ $totalEquipos }}</div>
+            <div class="stat-label">Equipos Registrados</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ $totalArbitros }}</div>
+            <div class="stat-label">Árbitros Activos</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ $torneosActivos }}</div>
+            <div class="stat-label">Torneos Registrados</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ $partidosProgramados }}</div>
+            <div class="stat-label">Partidos Programados (≥ hoy)</div>
+        </div>
     </div>
 
     <h3 class="section-title"><i class="fas fa-trophy"></i> Gestión de Torneos</h3>
     <div class="cards">
         <div class="card">
-            <i class="fas fa-edit"></i><h3>Gestionar Torneos</h3><p>Modifica torneos existentes y configuración</p>
-            <a href="/gestionar_torneos" class="btn-dashboard"><i class="fas fa-edit"></i> Gestionar</a>
+            <i class="fas fa-edit"></i>
+            <h3>Gestionar Torneos</h3>
+            <p>Modifica torneos existentes y configuración</p>
+            <a href="/gestionar_torneos" class="btn-dashboard">
+                <i class="fas fa-edit"></i> Gestionar
+            </a>
         </div>
         <div class="card">
-            <i class="fas fa-calendar-alt"></i><h3>Programar Partidos</h3><p>Gestiona el calendario y fixture de partidos</p>
-            <a href="/programar_partidos" class="btn-dashboard"><i class="fas fa-calendar-plus"></i> Programar</a>
+            <i class="fas fa-calendar-alt"></i>
+            <h3>Programar Partidos</h3>
+            <p>Gestiona el calendario y fixture de partidos</p>
+            <a href="/programar_partidos" class="btn-dashboard">
+                <i class="fas fa-calendar-plus"></i> Programar
+            </a>
         </div>
     </div>
 
     <h3 class="section-title"><i class="fas fa-users"></i> Gestión de Equipos</h3>
     <div class="cards">
         <div class="card">
-            <i class="fas fa-list"></i><h3>Gestionar Equipos</h3><p>Administra equipos existentes y sus datos</p>
-            <a href="/gestionar_equipos" class="btn-dashboard"><i class="fas fa-cog"></i> Gestionar</a>
+            <i class="fas fa-list"></i>
+            <h3>Gestionar Equipos</h3>
+            <p>Administra equipos existentes y sus datos</p>
+            <a href="/gestionar_equipos" class="btn-dashboard">
+                <i class="fas fa-cog"></i> Gestionar
+            </a>
         </div>
         <div class="card">
-            <i class="fas fa-eye"></i><h3>Ver Jugadores</h3><p>Solicitudes y jugadores activos</p>
-            <button class="btn-dashboard" onclick="abrirModalJugadores()"><i class="fas fa-list"></i> Ver Jugadores</button>
+            <i class="fas fa-eye"></i>
+            <h3>Ver Jugadores</h3>
+            <p>Solicitudes y jugadores activos</p>
+            <button class="btn-dashboard" onclick="abrirModalJugadores()">
+                <i class="fas fa-list"></i> Ver Jugadores
+            </button>
         </div>
     </div>
 
     <h3 class="section-title"><i class="fas fa-whistle"></i> Gestión de Árbitros</h3>
     <div class="cards">
         <div class="card">
-            <i class="fas fa-eye"></i><h3>Ver Árbitros</h3><p>Consulta, edita y elimina árbitros</p>
-            <button class="btn-dashboard" onclick="abrirVerArbitros()"><i class="fas fa-list"></i> Ver Árbitros</button>
+            <i class="fas fa-eye"></i>
+            <h3>Ver Árbitros</h3>
+            <p>Consulta, edita y elimina árbitros</p>
+            <button class="btn-dashboard" onclick="abrirVerArbitros()">
+                <i class="fas fa-list"></i> Ver Árbitros
+            </button>
         </div>
     </div>
 </div>
 
-<!-- Modal Jugadores -->
+{{-- ================= MODAL JUGADORES ================= --}}
 <div class="modal fade" id="modalJugadores" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -120,19 +206,22 @@
 
                 <ul class="nav nav-tabs" id="tabJugadores" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="tab-solicitudes" data-bs-toggle="tab" data-bs-target="#pane-solicitudes" type="button" role="tab">
-                            Solicitudes Pendientes <span class="badge bg-warning text-dark" id="badgePendientes">0</span>
+                        <button class="nav-link active" id="tab-solicitudes"
+                                data-bs-toggle="tab" data-bs-target="#pane-solicitudes" type="button" role="tab">
+                            Solicitudes Pendientes
+                            <span class="badge bg-warning text-dark" id="badgePendientes">0</span>
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="tab-activos" data-bs-toggle="tab" data-bs-target="#pane-activos" type="button" role="tab">
+                        <button class="nav-link" id="tab-activos"
+                                data-bs-toggle="tab" data-bs-target="#pane-activos" type="button" role="tab">
                             Jugadores Activos
                         </button>
                     </li>
                 </ul>
 
                 <div class="tab-content pt-3">
-                    <!-- Solicitudes -->
+                    {{-- Solicitudes --}}
                     <div class="tab-pane fade show active" id="pane-solicitudes" role="tabpanel">
                         <div class="table-responsive">
                             <table class="table table-dark table-hover align-middle">
@@ -143,8 +232,8 @@
                                     <th>CURP</th>
                                     <th>Nacimiento</th>
                                     <th>Localidad</th>
-                                    <th>Dorsal</th><!-- nuevo -->
-                                    <th>Posición</th><!-- nuevo -->
+                                    <th>Dorsal</th>
+                                    <th>Posición</th>
                                     <th style="width:230px">Acciones</th>
                                 </tr>
                                 </thead>
@@ -153,7 +242,7 @@
                         </div>
                     </div>
 
-                    <!-- Activos -->
+                    {{-- Activos --}}
                     <div class="tab-pane fade" id="pane-activos" role="tabpanel">
                         <div class="table-responsive">
                             <table class="table table-dark table-hover align-middle">
@@ -177,7 +266,7 @@
     </div>
 </div>
 
-<!-- Submodal Aprobar (asignar equipo) -->
+{{-- SUBMODAL APROBAR JUGADOR --}}
 <div class="modal fade" id="modalAprobar" tabindex="-1">
     <div class="modal-dialog">
         <form id="formAprobar" class="modal-content">
@@ -191,17 +280,22 @@
                     <label class="form-label">Equipo *</label>
                     <select class="form-select" id="aprobarEquipo" required></select>
                 </div>
-                <small class="text-muted">Al confirmar, el jugador pasará a estado <span class="badge bg-success">Activo</span>.</small>
+                <small class="text-muted">
+                    Al confirmar, el jugador pasará a estado
+                    <span class="badge bg-success">Activo</span>.
+                </small>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn btn-primary" type="submit"><i class="fas fa-check"></i> Aprobar</button>
+                <button class="btn btn-primary" type="submit">
+                    <i class="fas fa-check"></i> Aprobar
+                </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Modal Árbitros (COMPLETO) -->
+{{-- MODAL ÁRBITROS --}}
 <div class="modal fade" id="modalVerArbitros" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content" style="background:linear-gradient(145deg, rgba(30,39,46,.98), rgba(20,90,50,.9)); border:2px solid #f1c40f; color:#fff;">
@@ -211,7 +305,7 @@
             </div>
 
             <div class="modal-body">
-                <!-- Formulario crear/editar -->
+                {{-- Formulario crear/editar árbitro --}}
                 <form id="frmArbitro" class="mb-4">
                     <input type="hidden" id="arb_id" value="">
                     <div class="row g-3">
@@ -256,7 +350,7 @@
                     </div>
                 </form>
 
-                <!-- Tabla -->
+                {{-- Tabla árbitros --}}
                 <div class="table-responsive">
                     <table class="table table-dark table-hover align-middle">
                         <thead>
@@ -287,7 +381,7 @@
 <script>
     const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    /* ===== Árbitros ===== */
+    /* ===== ÁRBITROS ===== */
     function abrirVerArbitros(){
         const m = new bootstrap.Modal(document.getElementById('modalVerArbitros'));
         m.show();
@@ -312,18 +406,22 @@
             data.forEach(a=>{
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-            <td>${a.nombre ?? '(sin nombre)'}</td>
-            <td>${a.licencia ?? ''}</td>
-            <td>${a.anios_experiencia ?? 0} años</td>
-            <td>${a.vigencia_licencia ?? ''}</td>
-            <td><span class="badge ${a.estado==='Activo'?'bg-success':'bg-secondary'}">${a.estado ?? ''}</span></td>
-            <td>${a.correo ?? ''}</td>
-            <td>${a.telefono ?? ''}</td>
-            <td>
-              <button class="btn btn-sm btn-warning me-1" title="Editar" onclick='editarArb(${JSON.stringify(a)})'><i class="fas fa-pen"></i></button>
-              <button class="btn btn-sm btn-danger" title="Eliminar" onclick="eliminarArb(${a.id_arbitro})"><i class="fas fa-trash"></i></button>
-            </td>
-          `;
+                    <td>${a.nombre ?? '(sin nombre)'}</td>
+                    <td>${a.licencia ?? ''}</td>
+                    <td>${a.anios_experiencia ?? 0} años</td>
+                    <td>${a.vigencia_licencia ?? ''}</td>
+                    <td><span class="badge ${a.estado==='Activo'?'bg-success':'bg-secondary'}">${a.estado ?? ''}</span></td>
+                    <td>${a.correo ?? ''}</td>
+                    <td>${a.telefono ?? ''}</td>
+                    <td>
+                      <button class="btn btn-sm btn-warning me-1" title="Editar" onclick='editarArb(${JSON.stringify(a)})'>
+                        <i class="fas fa-pen"></i>
+                      </button>
+                      <button class="btn btn-sm btn-danger" title="Eliminar" onclick="eliminarArb(${a.id_arbitro})">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                `;
                 tb.appendChild(tr);
             });
         }catch(e){
@@ -423,19 +521,14 @@
         document.getElementById('arb_estado').value = '';
     }
 
-    /* ===== Jugadores (tu lógica existente, con ajustes pedidos) ===== */
+    /* ===== JUGADORES ===== */
     let modalJugadores, modalAprobar;
+
     document.addEventListener('DOMContentLoaded', ()=>{
         modalJugadores = new bootstrap.Modal(document.getElementById('modalJugadores'));
         modalAprobar   = new bootstrap.Modal(document.getElementById('modalAprobar'));
 
-        // Cargar equipos para el select de aprobación
         cargarEquiposSelect();
-
-        // estadísticas dummy
-        actualizarEstadisticasTorneo('1');
-
-        // manejar submit aprobar
         document.getElementById('formAprobar').addEventListener('submit', submitAprobar);
     });
 
@@ -483,20 +576,24 @@
                 const nombre = [j.apaterno, j.amaterno, j.nombre].filter(Boolean).join(' ');
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-        <td><strong>${nombre}</strong></td>
-        <td>${j.correo ?? '-'}</td>
-        <td><span class="badge bg-light text-dark">${j.curp ?? '-'}</span></td>
-        <td>${j.fecha_de_nacimiento ?? '-'}</td>
-        <td>${j.localidad ?? '-'}</td>
-        <td>${j.dorsal ?? '-'}</td>
-        <td>${j.posicion ?? '-'}</td>
-        <td>
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-success" onclick="abrirAprobar(${j.id_jugador})"><i class="fas fa-check"></i> Aprobar</button>
-            <button class="btn btn-sm btn-danger" onclick="rechazar(${j.id_jugador})"><i class="fas fa-times"></i> Rechazar</button>
-          </div>
-        </td>
-      `;
+                    <td><strong>${nombre}</strong></td>
+                    <td>${j.correo ?? '-'}</td>
+                    <td><span class="badge bg-light text-dark">${j.curp ?? '-'}</span></td>
+                    <td>${j.fecha_de_nacimiento ?? '-'}</td>
+                    <td>${j.localidad ?? '-'}</td>
+                    <td>${j.dorsal ?? '-'}</td>
+                    <td>${j.posicion ?? '-'}</td>
+                    <td>
+                      <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-success" onclick="abrirAprobar(${j.id_jugador})">
+                          <i class="fas fa-check"></i> Aprobar
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="rechazar(${j.id_jugador})">
+                          <i class="fas fa-times"></i> Rechazar
+                        </button>
+                      </div>
+                    </td>
+                `;
                 tbody.appendChild(tr);
             });
 
@@ -522,12 +619,12 @@
                 const nombre = [j.apaterno, j.amaterno, j.nombre].filter(Boolean).join(' ');
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-        <td><strong>${nombre}</strong></td>
-        <td>${j.equipo ?? '-'}</td>
-        <td>${j.dorsal ?? '-'}</td>
-        <td>${j.posicion ?? '-'}</td>
-        <td>${j.correo ?? '-'}</td>
-      `;
+                    <td><strong>${nombre}</strong></td>
+                    <td>${j.equipo ?? '-'}</td>
+                    <td>${j.dorsal ?? '-'}</td>
+                    <td>${j.posicion ?? '-'}</td>
+                    <td>${j.correo ?? '-'}</td>
+                `;
                 tbody.appendChild(tr);
             });
         }catch(e){
@@ -538,7 +635,6 @@
     function abrirAprobar(idJugador){
         document.getElementById('aprobarIdJugador').value = idJugador;
         document.getElementById('aprobarEquipo').value = '';
-        // 👇 ya NO limpiamos ni tocamos dorsal/posicion (no existen en el modal)
         modalAprobar.show();
     }
 
@@ -553,7 +649,7 @@
             const res = await fetch(`/api/jugadores/${id}/aprobar`, {
                 method:'POST',
                 headers:{'Content-Type':'application/json','X-CSRF-TOKEN':CSRF},
-                body: JSON.stringify({equipo:Number(equipo)}) // solo equipo
+                body: JSON.stringify({equipo:Number(equipo)})
             });
             const json = await res.json();
             if(!json.ok){
@@ -586,24 +682,6 @@
         }catch(e){
             alert('Error de red.');
         }
-    }
-
-    document.getElementById('selectorTorneo').addEventListener('change', function(){
-        actualizarEstadisticasTorneo(this.value);
-    });
-
-    // Solo decorativo
-    function actualizarEstadisticasTorneo(id){
-        const map = {
-            '1': {equipos: 24, arbitros: 15, torneos: 5, partidos: 48},
-            '2': {equipos: 18, arbitros: 12, torneos: 3, partidos: 32},
-            '3': {equipos: 30, arbitros: 20, torneos: 7, partidos: 65}
-        };
-        const m = map[id] || map['1'];
-        document.getElementById('statEquipos').textContent = m.equipos;
-        document.getElementById('statArbitros').textContent = m.arbitros;
-        document.getElementById('statTorneos').textContent = m.torneos;
-        document.getElementById('statPartidos').textContent = m.partidos;
     }
 </script>
 </body>

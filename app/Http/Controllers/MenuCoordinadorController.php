@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\Equipo;
 use App\Models\Torneo;
 use App\Models\Partido;
@@ -9,28 +11,35 @@ use App\Models\Persona;
 
 class MenuCoordinadorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $totEquipos   = Equipo::count();
-        $totTorneos   = Torneo::count();
-        $totPartidos  = Partido::count();
-        $totPersonas  = Persona::count();
+        // Datos del coordinador desde la sesión
+        $coordNombre = null;
+        $coordCorreo = null;
 
-        $torneosRecientes = Torneo::select('id_torneo','nombre','temporada','fecha_inicio','fecha_fin')
-            ->orderBy('fecha_inicio','desc')
-            ->limit(5)
-            ->get();
+        $idPersona = $request->session()->get('user_id');
 
-        $proximosPartidos = Partido::with(['torneo:id_torneo,nombre','local:id_equipo,nombre','visitante:id_equipo,nombre'])
-            ->whereDate('fecha','>=', now()->toDateString())
-            ->orderBy('fecha','asc')
-            ->orderBy('hora','asc')
-            ->limit(5)
-            ->get();
+        if ($idPersona) {
+            $persona = Persona::where('id_persona', $idPersona)->first();
+            if ($persona) {
+                $coordNombre = trim($persona->nombre.' '.$persona->apaterno.' '.$persona->amaterno);
+                $coordCorreo = $persona->correo ?? null;
+            }
+        }
+
+        // Estadísticas reales
+        $totalEquipos        = Equipo::count();
+        $totalArbitros       = DB::table('arbitros')->count();
+        $torneosActivos      = Torneo::count(); // si luego agregas columna estado, aquí filtras
+        $partidosProgramados = Partido::whereDate('fecha', '>=', now()->toDateString())->count();
 
         return view('menu_cordinador', compact(
-            'totEquipos','totTorneos','totPartidos','totPersonas',
-            'torneosRecientes','proximosPartidos'
+            'coordNombre',
+            'coordCorreo',
+            'totalEquipos',
+            'totalArbitros',
+            'torneosActivos',
+            'partidosProgramados'
         ));
     }
 }

@@ -121,6 +121,11 @@
             <div class="me-3">
                 <i class="fas fa-whistle text-warning"></i>
                 <strong>Árbitro</strong>
+                @if(!empty($nombreUsuario))
+                    <div class="small text-warning" style="font-weight: 400;">
+                        {{ $nombreUsuario }}
+                    </div>
+                @endif
             </div>
             <a href="/" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Salir
@@ -146,7 +151,7 @@
 
     <!-- Cards Principales -->
     <div class="cards">
-        <!-- Registrar Resultados (lleva a la página standalone) -->
+        <!-- Registrar Resultados -->
         <div class="card">
             <i class="fas fa-clipboard-check"></i>
             <h3>Registrar Resultados</h3>
@@ -156,7 +161,7 @@
             </a>
         </div>
 
-        <!-- Mis Partidos Asignados (solo ver, sin editar) -->
+        <!-- Mis Partidos Asignados -->
         <div class="card">
             <i class="fas fa-calendar-alt"></i>
             <h3>Mis Partidos Asignados</h3>

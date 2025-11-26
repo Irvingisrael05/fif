@@ -11,9 +11,33 @@ class ArbitroMenuController extends Controller
     /**
      * Muestra el menú del árbitro (menu_arbitro.blade.php)
      */
-    public function menu()
+    public function menu(Request $r)
     {
-        return view('menu_arbitro');
+        // Tomamos el id_persona de la sesión, igual que en el resto del sistema
+        $idPersona = $r->session()->get('user_id');
+
+        $nombreUsuario = null;
+
+        if ($idPersona) {
+            // Buscamos en personas el nombre completo
+            $persona = DB::table('personas')
+                ->where('id_persona', $idPersona)
+                ->first(['nombre', 'apaterno', 'amaterno']);
+
+            if ($persona) {
+                $nombreUsuario = trim(
+                    ($persona->nombre   ?? '') . ' ' .
+                    ($persona->apaterno ?? '') . ' ' .
+                    ($persona->amaterno ?? '')
+                );
+                if ($nombreUsuario === '') {
+                    $nombreUsuario = null;
+                }
+            }
+        }
+
+        // Enviamos el nombre (o null) a la vista
+        return view('menu_arbitro', compact('nombreUsuario'));
     }
 
     /**
@@ -152,11 +176,6 @@ class ArbitroMenuController extends Controller
 
     /**
      * GET /arbitro/partidos/jugados-sin-resultado
-     * Para la página regitro_resultados:
-     * - partidos del árbitro
-     * - fecha <= hoy (ya jugados)
-     * - estado_partido = Activo
-     * - que NO tengan registro en asigna_partido
      */
     public function partidosJugadosSinResultado(Request $r)
     {
@@ -193,8 +212,6 @@ class ArbitroMenuController extends Controller
 
     /**
      * POST /arbitro/partidos/{id}/resultado
-     * Guarda resultado insertando en asigna_partido.
-     * Los triggers se encargan de puntos y clasificación.
      */
     public function guardarResultado(Request $r, int $id)
     {

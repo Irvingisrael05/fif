@@ -26,7 +26,7 @@ class PartidoController extends Controller
 
         // === CANCHAS (columnas tolerantes) ===
         $canchasCols = ['id_cancha','nombre'];
-        // mapeos tolerantes
+
         $colLocalidad = Schema::hasColumn('canchas','localidad') ? 'localidad' :
             (Schema::hasColumn('canchas','id_localidad') ? 'id_localidad' : null);
         $colDireccion = Schema::hasColumn('canchas','direccion') ? 'direccion' :
@@ -45,50 +45,19 @@ class PartidoController extends Controller
             ->orderBy('comunidad','asc')
             ->get(['id_localidad','comunidad']);
 
-        // === ÁRBITROS (display name tolerante) ===
-        // Prioridad:
-        // 1) personas (si existe arbitros.id_persona)
-        // 2) arbitros.nombre
-        // 3) arbitros.alias
-        // 4) 'Árbitro #<id>'
+        // === ÁRBITROS: usando tu BD real (arbitros.persona -> personas.id_persona) ===
+        $arbitros = DB::table('arbitros')
+            ->join('personas', 'personas.id_persona', '=', 'arbitros.persona')
+            ->orderBy('personas.nombre', 'asc')
+            ->orderBy('personas.apaterno', 'asc')
+            ->get([
+                'arbitros.id_arbitro',
+                DB::raw("CONCAT(personas.nombre,' ',personas.apaterno,' ',personas.amaterno) AS nombre")
+            ]);
 
-        $arbQuery = DB::table('arbitros');
-        $arbSelect = ['arbitros.id_arbitro'];
-
-        if (Schema::hasColumn('arbitros','id_persona') && Schema::hasTable('personas')
-            && Schema::hasColumn('personas','id_persona') && Schema::hasColumn('personas','nombre')) {
-
-            $arbQuery = $arbQuery->leftJoin('personas','personas.id_persona','=','arbitros.id_persona');
-
-            $partAp = Schema::hasColumn('personas','apaterno') ? "COALESCE(personas.apaterno,'')" : "''";
-            $partAm = Schema::hasColumn('personas','amaterno') ? "COALESCE(personas.amaterno,'')" : "''";
-
-            $arbSelect[] = DB::raw(
-                "TRIM(CONCAT(COALESCE(personas.nombre,''),' ',$partAp,' ',$partAm)) AS nombre"
-            );
-
-            $arbitros = $arbQuery->orderBy('personas.nombre','asc')->get($arbSelect);
-
-        } else {
-            // Armar un COALESCE con columnas que sí existan
-            $hasNombre = Schema::hasColumn('arbitros','nombre');
-            $hasAlias  = Schema::hasColumn('arbitros','alias');
-
-            if ($hasNombre && $hasAlias) {
-                $display = "COALESCE(arbitros.nombre, arbitros.alias, CONCAT('Árbitro #', arbitros.id_arbitro))";
-            } elseif ($hasNombre) {
-                $display = "COALESCE(arbitros.nombre, CONCAT('Árbitro #', arbitros.id_arbitro))";
-            } elseif ($hasAlias) {
-                $display = "COALESCE(arbitros.alias, CONCAT('Árbitro #', arbitros.id_arbitro))";
-            } else {
-                $display = "CONCAT('Árbitro #', arbitros.id_arbitro)";
-            }
-
-            $arbSelect[] = DB::raw("$display AS nombre");
-            $arbitros = $arbQuery->orderBy('id_arbitro','asc')->get($arbSelect);
-        }
-
-        return view('programar_partidos', compact('torneos','equipos','canchas','localidades','arbitros'));
+        return view('programar_partidos', compact(
+            'torneos','equipos','canchas','localidades','arbitros'
+        ));
     }
 
     /**
@@ -107,7 +76,6 @@ class PartidoController extends Controller
             'hora'             => 'required'
         ]);
 
-        // Ajusta nombres de columnas reales en tu tabla "partidos"
         Partido::create([
             'id_torneo'        => $request->id_torneo,
             'jornada'          => $request->jornada,
@@ -127,7 +95,6 @@ class PartidoController extends Controller
      */
     public function canchaShow($id)
     {
-        // Detectar nombres de columnas
         $colDireccion = Schema::hasColumn('canchas','direccion') ? 'direccion' :
             (Schema::hasColumn('canchas','ubicacion') ? 'ubicacion' : null);
         $colLocalidad = Schema::hasColumn('canchas','localidad') ? 'localidad' :
@@ -146,7 +113,6 @@ class PartidoController extends Controller
             return response()->json(['ok'=>false,'message'=>'Cancha no encontrada'], 404);
         }
 
-        // Resolver nombre de la localidad si existe catálogo
         $localidadNombre = null;
         if ($colLocalidad && isset($cancha->id_localidad) && Schema::hasTable('localidades')) {
             $loc = DB::table('localidades')->where('id_localidad',$cancha->id_localidad)->first(['comunidad']);
@@ -170,7 +136,6 @@ class PartidoController extends Controller
 
     /**
      * API: Alta rápida de cancha (desde el modal)
-     * Espera: nombre, localidad (id_localidad), direccion, capacidad?, telefono?, condiciones?
      */
     public function canchaFast(Request $request)
     {
@@ -183,7 +148,6 @@ class PartidoController extends Controller
             'condiciones'=> 'nullable|string|max:255',
         ]);
 
-        // Resolver columnas reales de la tabla canchas
         $colLocalidad = Schema::hasColumn('canchas','localidad') ? 'localidad' :
             (Schema::hasColumn('canchas','id_localidad') ? 'id_localidad' : null);
         $colDireccion = Schema::hasColumn('canchas','direccion') ? 'direccion' :
@@ -209,52 +173,28 @@ class PartidoController extends Controller
     }
 
     /**
-     * API Demo: árbitros disponibles (puedes implementar lógica real de conflicto +/- 2h)
+     * API: árbitros disponibles
      */
     public function arbitrosDisponibles(Request $request)
     {
-        // Reutiliza la misma lógica de nombre tolerante del método create()
-        $arbQuery = DB::table('arbitros');
-        $list = [];
-
-        if (Schema::hasColumn('arbitros','id_persona') && Schema::hasTable('personas')
-            && Schema::hasColumn('personas','id_persona') && Schema::hasColumn('personas','nombre')) {
-
-            $arbQuery = $arbQuery->leftJoin('personas','personas.id_persona','=','arbitros.id_persona');
-
-            $partAp = Schema::hasColumn('personas','apaterno') ? "COALESCE(personas.apaterno,'')" : "''";
-            $partAm = Schema::hasColumn('personas','amaterno') ? "COALESCE(personas.amaterno,'')" : "''";
-
-            $rows = $arbQuery->orderBy('personas.nombre','asc')->get([
+        // Aquí solo devolvemos la lista, pero ya con nombres completos reales
+        $rows = DB::table('arbitros')
+            ->join('personas', 'personas.id_persona', '=', 'arbitros.persona')
+            ->orderBy('personas.nombre','asc')
+            ->orderBy('personas.apaterno','asc')
+            ->get([
                 'arbitros.id_arbitro',
-                DB::raw("TRIM(CONCAT(COALESCE(personas.nombre,''),' ',$partAp,' ',$partAm)) AS nombre")
+                DB::raw("CONCAT(personas.nombre,' ',personas.apaterno,' ',personas.amaterno) AS nombre")
             ]);
 
-            foreach ($rows as $r) {
-                $list[] = ['id'=>$r->id_arbitro, 'text'=>$r->nombre];
-            }
-
-        } else {
-            $hasNombre = Schema::hasColumn('arbitros','nombre');
-            $hasAlias  = Schema::hasColumn('arbitros','alias');
-
-            $selects = ['id_arbitro'];
-            if ($hasNombre && $hasAlias) {
-                $selects[] = DB::raw("COALESCE(nombre, alias, CONCAT('Árbitro #', id_arbitro)) AS nombre");
-            } elseif ($hasNombre) {
-                $selects[] = DB::raw("COALESCE(nombre, CONCAT('Árbitro #', id_arbitro)) AS nombre");
-            } elseif ($hasAlias) {
-                $selects[] = DB::raw("COALESCE(alias, CONCAT('Árbitro #', id_arbitro)) AS nombre");
-            } else {
-                $selects[] = DB::raw("CONCAT('Árbitro #', id_arbitro) AS nombre");
-            }
-
-            $rows = $arbQuery->orderBy('id_arbitro','asc')->get($selects);
-            foreach ($rows as $r) {
-                $list[] = ['id'=>$r->id_arbitro, 'text'=>$r->nombre];
-            }
+        $list = [];
+        foreach ($rows as $r) {
+            $list[] = [
+                'id'   => $r->id_arbitro,
+                'text' => $r->nombre,
+            ];
         }
 
-        return response()->json(['ok'=>true, 'arbitros'=>$list]);
+        return response()->json(['ok' => true, 'arbitros' => $list]);
     }
 }

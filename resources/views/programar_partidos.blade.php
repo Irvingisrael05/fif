@@ -83,9 +83,8 @@
         .nueva-cancha-form{background:rgba(241,196,15,.1); border:1px solid rgba(241,196,15,.3); border-radius:10px; padding:15px; margin-top:10px;}
         .alert-warning{background:rgba(241,196,15,.2); border:1px solid var(--dorado); border-radius:10px; padding:15px; margin-bottom:15px;}
 
-        /* ====== Mejora de contraste en <select> y menú desplegable ====== */
         :root{
-            color-scheme: dark;                 /* ayuda a que el menú nativo sea oscuro */
+            color-scheme: dark;
             --select-bg: rgba(16,38,28,.98);
             --select-txt:#FAF3CF;
             --select-border:#f1c40f;
@@ -114,7 +113,6 @@
         }
         .form-select::-ms-expand{display:none;}
 
-        /* Parche opcional para Firefox */
         @-moz-document url-prefix(){
             .form-select option{
                 background-color:#0e1d17 !important;
@@ -147,7 +145,6 @@
         </div>
     @endif
 
-    <!-- Formulario Principal -->
     <div class="card">
         <div class="card-header">
             <h3 class="card-title"><i class="fas fa-plus-circle"></i> Programar Nuevo Partido</h3>
@@ -156,7 +153,7 @@
             <form id="formProgramarPartido" method="POST" action="{{ route('partidos.store') }}">
                 @csrf
 
-                <!-- Torneo y Jornada -->
+                {{-- Torneo y Jornada --}}
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <h5 style="color: var(--dorado);"><i class="fas fa-trophy"></i> Información del Torneo</h5>
@@ -192,7 +189,7 @@
                     </div>
                 </div>
 
-                <!-- Equipos -->
+                {{-- Equipos --}}
                 <div class="row mb-4">
                     <div class="col-md-12">
                         <h5 style="color: var(--dorado);"><i class="fas fa-users"></i> Selección de Equipos</h5>
@@ -228,7 +225,7 @@
                     </div>
                 </div>
 
-                <!-- Cancha -->
+                {{-- Cancha --}}
                 <div class="row mb-4">
                     <div class="col-md-12">
                         <h5 style="color: var(--dorado);"><i class="fas fa-map-marker-alt"></i> Ubicación del Partido</h5>
@@ -251,7 +248,7 @@
                                 </div>
                             </div>
 
-                            <!-- Formulario para nueva cancha -->
+                            {{-- Form nueva cancha --}}
                             <div id="formNuevaCancha" class="nueva-cancha-form" style="display:none;">
                                 <h6 class="text-warning mb-3"><i class="fas fa-plus-circle"></i> Nueva Cancha</h6>
                                 <div class="row">
@@ -299,7 +296,7 @@
                                 </div>
                             </div>
 
-                            <!-- Información de la cancha seleccionada -->
+                            {{-- Info cancha seleccionada --}}
                             <div id="infoCancha" style="display:none;">
                                 <div class="row mt-3">
                                     <div class="col-md-3"><strong>Dirección:</strong><p id="direccionCancha" class="mb-1">—</p></div>
@@ -312,7 +309,7 @@
                     </div>
                 </div>
 
-                <!-- Árbitro -->
+                {{-- Árbitro --}}
                 <div class="row mb-4">
                     <div class="col-md-12">
                         <h5 style="color: var(--dorado);"><i class="fas fa-whistle"></i> Asignación de Árbitro</h5>
@@ -353,7 +350,6 @@
     const RUTA_ARB_LIBRES  = @json(route('partidos.arbitros.disponibles'));
     const CSRF = @json(csrf_token());
 
-    // Info cancha seleccionada
     document.getElementById('cancha').addEventListener('change', async function(){
         const id = this.value;
         const infoDiv = document.getElementById('infoCancha');
@@ -370,7 +366,6 @@
         infoDiv.style.display='block';
     });
 
-    // Mostrar/ocultar form nueva cancha
     function mostrarFormularioNuevaCancha(){
         document.getElementById('formNuevaCancha').style.display='block';
         document.getElementById('cancha').disabled = true;
@@ -382,11 +377,10 @@
             .forEach(id=>document.getElementById(id).value='');
     }
 
-    // Crear cancha vía AJAX
     async function agregarNuevaCancha(){
         const payload = {
             nombre:     document.getElementById('nc_nombre').value.trim(),
-            localidad:  document.getElementById('nc_localidad').value, // id_localidad
+            localidad:  document.getElementById('nc_localidad').value,
             direccion:  document.getElementById('nc_direccion').value.trim(),
             capacidad:  document.getElementById('nc_capacidad').value,
             telefono:   document.getElementById('nc_telefono').value,
@@ -412,7 +406,6 @@
         sel.dispatchEvent(new Event('change'));
     }
 
-    // Disponibilidad árbitro
     async function verificarDisponibilidadArbitroUI(){
         const fecha = document.getElementById('fechaPartido').value;
         const hora  = document.getElementById('horaPartido').value;
@@ -440,13 +433,12 @@
                 div.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i>
           Árbitro disponible para este horario.</div>`;
             }
-        }catch(e){ /* noop */ }
+        }catch(e){ }
     }
     ['fechaPartido','horaPartido','arbitroPrincipal'].forEach(id=>{
         document.getElementById(id).addEventListener('change', verificarDisponibilidadArbitroUI);
     });
 
-    // Validación del form
     document.getElementById('formProgramarPartido').addEventListener('submit', function(e){
         const req = ['torneo','jornada','fechaPartido','horaPartido','equipoLocal','equipoVisitante','cancha','arbitroPrincipal'];
         for(const id of req){
@@ -458,7 +450,6 @@
         if(local === visit){ e.preventDefault(); alert('El equipo local y visitante no pueden ser el mismo'); return; }
     });
 
-    // Fecha mínima hoy
     document.getElementById('fechaPartido').min = new Date().toISOString().split('T')[0];
 </script>
 </body>
