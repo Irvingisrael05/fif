@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 use App\Models\Partido;
 
 class PartidoController extends Controller
@@ -61,10 +62,11 @@ class PartidoController extends Controller
     }
 
     /**
-     * Guardar partido
+     * Guardar partido (ahora usando el procedimiento almacenado)
      */
     public function store(Request $request)
     {
+        // Validación básica en Laravel
         $request->validate([
             'id_torneo'        => 'required|integer|exists:torneos,id_torneo',
             'jornada'          => 'required|integer|min:1',
@@ -76,18 +78,56 @@ class PartidoController extends Controller
             'hora'             => 'required'
         ]);
 
-        Partido::create([
-            'id_torneo'        => $request->id_torneo,
-            'jornada'          => $request->jornada,
-            'equipo_local'     => $request->equipo_local,
-            'equipo_visitante' => $request->equipo_visitante,
-            'id_cancha'        => $request->id_cancha,
-            'id_arbitro'       => $request->id_arbitro,
-            'fecha'            => $request->fecha,
-            'hora'             => $request->hora,
-        ]);
+        try {
+            // Llamamos al SP con los IDs que vienen del formulario
+            DB::statement('CALL sp_insertar_partido_ids(?,?,?,?,?,?,?,?)', [
+                $request->jornada,
+                $request->fecha,
+                $request->hora,
+                $request->id_torneo,
+                $request->equipo_local,
+                $request->equipo_visitante,
+                $request->id_arbitro,
+                $request->id_cancha,
+            ]);
 
-        return redirect()->back()->with('ok', 'Partido programado correctamente.');
+            return redirect()
+                ->back()
+                ->with('ok', 'Partido programado correctamente.');
+
+        } catch (QueryException $e) {
+            // Mensaje original de MySQL/MariaDB
+            $raw = $e->errorInfo[2] ?? $e->getMessage();
+
+            // Mensaje amigable por defecto
+            $userMsg = 'Ocurrió un problema al registrar el partido. Intente de nuevo.';
+
+            // Mapeamos los mensajes del SP a algo entendible por el usuario
+            if (str_contains($raw, 'Fecha fuera del periodo del torneo')) {
+                $userMsg = 'La fecha que intenta seleccionar no se encuentra disponible dentro del torneo. '
+                    .'Por favor, diríjase a la sección "Gestión de torneos" → "Gestionar torneos existentes" '
+                    .'y revise que las fechas de inicio y fin del torneo incluyan el día seleccionado.';
+            } elseif (str_contains($raw, 'Conflicto de horario en la cancha')) {
+                $userMsg = 'Ya existe un partido programado en esa cancha con un horario cercano. '
+                    .'Seleccione otra hora o una cancha diferente.';
+            } elseif (str_contains($raw, 'Torneo no encontrado')) {
+                $userMsg = 'El torneo seleccionado no es válido. Actualice la página y vuelva a intentarlo.';
+            } elseif (str_contains($raw, 'Equipo local no encontrado')
+                || str_contains($raw, 'Equipo visitante no encontrado')) {
+                $userMsg = 'Alguno de los equipos seleccionados no es válido. '
+                    .'Actualice la página y revise la lista de equipos.';
+            } elseif (str_contains($raw, 'Árbitro no encontrado')) {
+                $userMsg = 'El árbitro seleccionado no es válido. Verifique la lista de árbitros disponibles.';
+            } elseif (str_contains($raw, 'Cancha no encontrada')) {
+                $userMsg = 'La cancha seleccionada no es válida. Verifique la información de canchas registradas.';
+            }
+
+            // Devolvemos sólo el mensaje bonito, NO el SQL completo
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors(['partido' => $userMsg]);
+        }
     }
 
     /**
@@ -177,7 +217,6 @@ class PartidoController extends Controller
      */
     public function arbitrosDisponibles(Request $request)
     {
-        // Aquí solo devolvemos la lista, pero ya con nombres completos reales
         $rows = DB::table('arbitros')
             ->join('personas', 'personas.id_persona', '=', 'arbitros.persona')
             ->orderBy('personas.nombre','asc')

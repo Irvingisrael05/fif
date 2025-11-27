@@ -240,12 +240,12 @@ class ArbitroMenuController extends Controller
             return response()->json(['ok' => false, 'message' => 'El partido ya tiene resultado registrado'], 422);
         }
 
+        // 🔹 Aquí va la pequeña modificación: dejamos que el TRIGGER calcule los puntos
         DB::table('asigna_partido')->insert([
-            'id_partido'       => $id,
-            'goles_local'      => (int) $r->goles_local,
-            'goles_visitante'  => (int) $r->goles_visitante,
-            'puntos_local'     => 0,
-            'puntos_visitante' => 0,
+            'id_partido'      => $id,
+            'goles_local'     => (int) $r->goles_local,
+            'goles_visitante' => (int) $r->goles_visitante,
+            // puntos_local y puntos_visitante los rellena el trigger BEFORE INSERT
         ]);
 
         return response()->json(['ok' => true]);
